@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Attendance Admin</title>
 </head>
 
@@ -10,7 +11,9 @@
 
     <h1>Attendance Admin</h1>
 
+    <!-- LOGIN -->
     <div id="loginSection">
+
         <h2>Admin Login</h2>
 
         <input
@@ -29,12 +32,16 @@
 
         <br><br>
 
-        <button onclick="adminLogin()">Login</button>
+        <button onclick="adminLogin()">
+            Login
+        </button>
 
         <p id="loginMessage"></p>
+
     </div>
 
 
+    <!-- ADMIN AREA -->
     <div id="adminSection" style="display:none;">
 
         <h2>Attendance Records</h2>
@@ -114,12 +121,6 @@
             );
 
 
-            localStorage.setItem(
-                "refresh_token",
-                data.refresh_token
-            );
-
-
             document.getElementById(
                 "loginSection"
             ).style.display = "none";
@@ -134,117 +135,74 @@
 
             loadAttendance();
         }
-async function loadAttendance() {
 
-    const token = localStorage.getItem("access_token");
 
-    const recordsDiv = document.getElementById("records");
-    const message = document.getElementById("message");
+        async function loadAttendance() {
 
-    if (!token) {
-        message.textContent = "Please log in first.";
-        return;
-    }
+            const token =
+                localStorage.getItem("access_token");
 
-    message.textContent = "Loading...";
+            const recordsDiv =
+                document.getElementById("records");
 
-    const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/attendance_records?select=*`,
-        {
-            headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": "Bearer " + token
+            const message =
+                document.getElementById("message");
+
+
+            if (!token) {
+
+                message.textContent =
+                    "Please log in first.";
+
+                return;
             }
-        }
-    );
-
-    if (!response.ok) {
-        const error = await response.json();
-        console.error(error);
-
-        message.textContent = "Error loading attendance.";
-        return;
-    }
-
-    const records = await response.json();
-
-    if (records.length === 0) {
-        recordsDiv.innerHTML = "No attendance records found.";
-        message.textContent = "";
-        return;
-    }
-
-    let html = `
-        <table border="1">
-            <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Status</th>
-            </tr>
-    `;
-
-    records.forEach(record => {
-
-        html += `
-            <tr>
-                <td>${record.student_id}</td>
-                <td>${record.name}</td>
-                <td>${record.date}</td>
-                <td>${record.status}</td>
-            </tr>
-        `;
-
-    });
-
-    html += `</table>`;
-
-    recordsDiv.innerHTML = html;
-    message.textContent = "";
-}
-
- 
 
 
-        function logout() {
-
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-
-            document.getElementById(
-                "adminSection"
-            ).style.display = "none";
+            message.textContent =
+                "Loading...";
 
 
-            document.getElementById(
-                "loginSection"
-            ).style.display = "block";
-        }
-
-    </script>
-
-</body>
-</html>                }
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/attendance_records?select=*`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
             );
 
+
+            const records =
+                await response.json();
+
+
             if (!response.ok) {
-                const error = await response.json();
-                console.error(error);
-                recordsDiv.innerHTML =
+
+                console.error(records);
+
+                message.textContent =
                     "Error loading attendance.";
+
                 return;
             }
 
-            const records = await response.json();
 
             if (records.length === 0) {
+
                 recordsDiv.innerHTML =
                     "No attendance records found.";
+
+                message.textContent = "";
+
                 return;
             }
+
 
             let html = `
                 <table border="1">
+
                     <tr>
                         <th>Student ID</th>
                         <th>Name</th>
@@ -252,6 +210,7 @@ async function loadAttendance() {
                         <th>Status</th>
                     </tr>
             `;
+
 
             records.forEach(record => {
 
@@ -266,10 +225,32 @@ async function loadAttendance() {
 
             });
 
-            html += "</table>";
+
+            html += `
+                </table>
+            `;
+
 
             recordsDiv.innerHTML = html;
+
+            message.textContent = "";
         }
+
+
+        function logout() {
+
+            localStorage.removeItem("access_token");
+
+            document.getElementById(
+                "adminSection"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "loginSection"
+            ).style.display = "block";
+        }
+
     </script>
 
 </body>
