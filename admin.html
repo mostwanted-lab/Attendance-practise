@@ -8,33 +8,250 @@
 
 <body>
 
-    <h1>Attendance Records</h1>
+    <h1>Attendance Admin</h1>
 
-    <button onclick="loadAttendance()">
-        Load Attendance
-    </button>
+    <div id="loginSection">
+        <h2>Admin Login</h2>
 
-    <div id="records"></div>
+        <input
+            type="email"
+            id="email"
+            placeholder="Admin email"
+        >
+
+        <br><br>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+        >
+
+        <br><br>
+
+        <button onclick="adminLogin()">Login</button>
+
+        <p id="loginMessage"></p>
+    </div>
+
+
+    <div id="adminSection" style="display:none;">
+
+        <h2>Attendance Records</h2>
+
+        <button onclick="loadAttendance()">
+            Load Attendance
+        </button>
+
+        <button onclick="logout()">
+            Logout
+        </button>
+
+        <p id="message"></p>
+
+        <div id="records"></div>
+
+    </div>
+
 
     <script>
-        const SUPABASE_URL = "https://qcmejqlmedjbayrogbrw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_Pjf1WiKUe4f8vGgysvPxfg_uKJHY_8U";
+
+        const SUPABASE_URL =
+            "https://qcmejqlmedjbayrogbrw.supabase.co";
+
+        const SUPABASE_KEY =
+            "sb_publishable_Pjf1WiKUe4f8vGgysvPxfg_uKJHY_8U";
+
+
+        async function adminLogin() {
+
+            const email =
+                document.getElementById("email").value.trim();
+
+            const password =
+                document.getElementById("password").value;
+
+            const loginMessage =
+                document.getElementById("loginMessage");
+
+            loginMessage.textContent = "Logging in...";
+
+
+            const response = await fetch(
+                `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": SUPABASE_KEY
+                    },
+
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                }
+            );
+
+
+            const data = await response.json();
+
+
+            if (!response.ok) {
+
+                loginMessage.textContent =
+                    data.error_description ||
+                    "Login failed.";
+
+                return;
+            }
+
+
+            localStorage.setItem(
+                "access_token",
+                data.access_token
+            );
+
+
+            localStorage.setItem(
+                "refresh_token",
+                data.refresh_token
+            );
+
+
+            document.getElementById(
+                "loginSection"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "adminSection"
+            ).style.display = "block";
+
+
+            loginMessage.textContent = "";
+
+            loadAttendance();
+        }
+
 
         async function loadAttendance() {
+
+            const token =
+                localStorage.getItem("access_token");
 
             const recordsDiv =
                 document.getElementById("records");
 
-            recordsDiv.innerHTML = "Loading...";
+            const message =
+                document.getElementById("message");
+
+
+            if (!token) {
+
+                message.textContent =
+                    "Please log in first.";
+
+                return;
+            }
+
+
+            message.textContent =
+                "Loading...";
+
 
             const response = await fetch(
                 `${SUPABASE_URL}/rest/v1/attendance_records?select=*`,
                 {
                     headers: {
                         "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
+                        "Authorization":
+                            "Bearer " + token
                     }
                 }
+            );
+
+
+            const records =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                console.error(records);
+
+                message.textContent =
+                    "Unable to load attendance.";
+
+                return;
+            }
+
+
+            if (records.length === 0) {
+
+                recordsDiv.innerHTML =
+                    "No attendance records.";
+
+                message.textContent = "";
+
+                return;
+            }
+
+
+            let html = `
+                <table border="1">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+            `;
+
+
+            records.forEach(record => {
+
+                html += `
+                    <tr>
+                        <td>${record.student_id}</td>
+                        <td>${record.name}</td>
+                        <td>${record.date}</td>
+                        <td>${record.status}</td>
+                    </tr>
+                `;
+
+            });
+
+
+            html += "</table>";
+
+
+            recordsDiv.innerHTML = html;
+
+            message.textContent = "";
+        }
+
+
+        function logout() {
+
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+
+            document.getElementById(
+                "adminSection"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "loginSection"
+            ).style.display = "block";
+        }
+
+    </script>
+
+</body>
+</html>                }
             );
 
             if (!response.ok) {
