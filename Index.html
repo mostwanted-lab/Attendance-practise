@@ -66,12 +66,11 @@
             );
 
             const data = await response.json();
-
-            if (!response.ok) {
-                console.error(data);
-                message.textContent = "Something went wrong.";
-                return;
-            }
+if (!response.ok) {
+    console.error("Supabase error:", data);
+    message.textContent = "Error: " + JSON.stringify(data);
+    return;
+}
 
             if (data.length === 0) {
                 message.textContent = "Invalid ID or access code.";
