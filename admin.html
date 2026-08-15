@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Admin</title>
+</head>
+
+<body>
+
+    <h1>Attendance Records</h1>
+
+    <button onclick="loadAttendance()">
+        Load Attendance
+    </button>
+
+    <div id="records"></div>
+
+    <script>
+        const SUPABASE_URL = "https://qcmejqlmedjbayrogbrw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_Pjf1WiKUe4f8vGgysvPxfg_uKJHY_8U";
+
+        async function loadAttendance() {
+
+            const recordsDiv =
+                document.getElementById("records");
+
+            recordsDiv.innerHTML = "Loading...";
+
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/attendance_records?select=*`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const error = await response.json();
+                console.error(error);
+                recordsDiv.innerHTML =
+                    "Error loading attendance.";
+                return;
+            }
+
+            const records = await response.json();
+
+            if (records.length === 0) {
+                recordsDiv.innerHTML =
+                    "No attendance records found.";
+                return;
+            }
+
+            let html = `
+                <table border="1">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+            `;
+
+            records.forEach(record => {
+
+                html += `
+                    <tr>
+                        <td>${record.student_id}</td>
+                        <td>${record.name}</td>
+                        <td>${record.date}</td>
+                        <td>${record.status}</td>
+                    </tr>
+                `;
+
+            });
+
+            html += "</table>";
+
+            recordsDiv.innerHTML = html;
+        }
+    </script>
+
+</body>
+</html>
